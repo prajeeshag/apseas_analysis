@@ -1,0 +1,6 @@
+*.nc
+*.grib
+cache
+data
+*.mp4
+*.png
