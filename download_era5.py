@@ -2,8 +2,6 @@ import cdsapi
 
 c = cdsapi.Client()
 
-year = 2009
-
 c.retrieve(
     "reanalysis-era5-single-levels-monthly-means",
     {
@@ -17,7 +15,7 @@ c.retrieve(
             "mean_sea_level_pressure",
             "mean_total_precipitation_rate",
         ],
-        "year": year,
+        "year": list(map(str, list(range(2000, 2024)))),
         "month": [
             "01",
             "02",
@@ -41,5 +39,5 @@ c.retrieve(
             85,
         ],
     },
-    f"era5_surface_fields_{year}.grib",
+    "era5_surface_fields.grib",
 )

@@ -22,6 +22,8 @@ def get_lon_lat(ar: xr.DataArray):
                 continue
         except KeyError:
             pass
+    lon_lat[0].load()
+    lon_lat[1].load()
     return lon_lat
 
 

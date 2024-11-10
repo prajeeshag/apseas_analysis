@@ -13,7 +13,7 @@ fname = Path(__file__).stem
 
 datasets: dict[str, tuple[Path, str]] = {
     "SeasAP": (
-        "data/20090102T0000Z/monthly/ap84SeasRF/t2_monmean_ap84SeasRF_ensmean.nc",
+        "data/20090602T0000Z/monthly/ap84SeasRF/t2_monmean_ap84SeasRF_ensmean.nc",
         "T2",
         1,
         -1,

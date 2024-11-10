@@ -4,3 +4,7 @@ cache
 data
 *.mp4
 *.png
+*.zarr
+*.zarr.zip
+*.idx
+*__pycache__

@@ -17,3 +17,7 @@ out_dir="$outdir/${exp}"
 cdo -r -ensmean $out_dir/mem*/pr_*.nc $out_dir/pr_monmean_${exp}_ensmean.nc
 cdo -r -ensmean $out_dir/mem*/prnc_*.nc $out_dir/prnc_monmean_${exp}_ensmean.nc
 cdo -r -ensmean $out_dir/mem*/prc_*.nc $out_dir/prc_monmean_${exp}_ensmean.nc
+
+cdo -r -ensmedian $out_dir/mem*/pr_*.nc $out_dir/pr_monmean_${exp}_ensmedian.nc
+cdo -r -ensmedian $out_dir/mem*/prnc_*.nc $out_dir/prnc_monmean_${exp}_ensmedian.nc
+cdo -r -ensmedian $out_dir/mem*/prc_*.nc $out_dir/prc_monmean_${exp}_ensmedian.nc
