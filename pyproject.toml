@@ -1,0 +1,16 @@
+[project]
+name = "analysis"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "xarray",
+    "dask[distributed]",
+    "cdo",
+    "netCDF4",
+    "zarr",
+    "joblib",
+    "cartopy>=0.24.1",
+    "colorcet>=3.1.0",
+]
