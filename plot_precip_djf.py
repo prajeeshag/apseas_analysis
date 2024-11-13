@@ -191,11 +191,13 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
         standard_parallels=(18, 27),
     )
     fig, axes1 = plt.subplots(
-        nrows=len(seas),
-        ncols=4,
-        figsize=(5 * 3, 5 * len(seas)),
+        nrows=2,
+        ncols=2,
+        figsize=(5 * 3, 5 * 3),
         subplot_kw={"projection": proj},
     )
+
+    axes = axes1.ravel()
 
     for n, (mon, seaname) in enumerate(seas.items()):
         month = mon
@@ -229,15 +231,14 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
         # trmm = ymonmean_precip_trmm(dates, to_grid=apseas)
 
         data_dict = {
-            "APSEAS": apseas,
-            "WRFAPSEAS": wrfapseas,
+            "CPLDSEAS": apseas,
+            "WRFSEAS": wrfapseas,
             "SEAS5": seas5,
             "ERA5": era5,
             #    "TRMM": trmm,
         }
         levels = [1, 3, 6, 9, 12, 16, 20, 25, 30, 40, 50, 75, 100, 150]
         cmap, norm = get_cmap(levels, cc.cm["rainbow4"], extend="max")
-        axes = axes1[n, :]
         for i, (dname, data) in enumerate(data_dict.items()):
             print(dname)
             # Model data for the given month
@@ -255,8 +256,8 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
 
             ax.coastlines()
             ax.add_feature(cfeature.BORDERS)
-            ax.set_title(dname, loc="left")
-            ax.set_title(seaname, loc="right")
+            ax.set_title(dname, loc="left", fontsize=16)
+            ax.set_title(seaname, loc="right", fontsize=16)
 
     cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
     startyear = list(yearrange)[0]
@@ -265,7 +266,8 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
     if startyear == endyear:
         title_year = f"{startyear}"
     fig.suptitle(
-        f"Rainfall {title_year} (Lead {lead})"
+        f"Rainfall {title_year} (Lead {lead})",
+        fontsize=16,
     )  # Add a single colorbar for all subplots
     plt.colorbar(
         cs,
@@ -323,7 +325,7 @@ def plot_c2nc_ratio_apseas(fname, lead, enstat):
 
         ax.coastlines()
         ax.add_feature(cfeature.BORDERS)
-        ax.set_title(seaname, loc="right")
+        ax.set_title(seaname, loc="right", fontsize=18)
 
     fig.suptitle(
         f"Convective Rainfall / Total Rainfall (Forecast Lead {lead})"
@@ -343,5 +345,5 @@ def plot_c2nc_ratio_apseas(fname, lead, enstat):
 if __name__ == "__main__":
     lead = 1
     enstat = "mem0"
-    make_seas_plots(fname, lead, enstat, yearrange=range(2009, 2013))
+    make_seas_plots(fname, lead, enstat, yearrange=range(2009, 2010))
     # plot_c2nc_ratio_apseas("convetive2total_ratio_apseas", lead, enstat)
