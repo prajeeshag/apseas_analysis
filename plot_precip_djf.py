@@ -9,6 +9,7 @@ import pandas as pd
 import xarray as xr
 import xesmf as xe
 from joblib import Memory
+from matplotlib import gridspec
 
 from utils import get_cmap, get_lon_lat
 
@@ -18,6 +19,7 @@ memory = Memory("cache")
 
 @memory.cache
 def ymonmean_precip_wrfapseas(
+    exp_name: str,
     month: int,
     lead: int,
     ensstat: str = "median",
@@ -31,11 +33,11 @@ def ymonmean_precip_wrfapseas(
     assert lead + nmons - 1 < 6
 
     ds_nc = xr.open_dataset(
-        "/scratch/athippp/cylc-archive/WRF8kmSEAS_H200911/20091102T0000Z/mem1/outputs/wrf2d_RAINNC.nc",
+        f"/scratch/athippp/cylc-archive/{exp_name}_H200911/20091102T0000Z/mem1/outputs/wrf2d_RAINNC.nc",
         chunks={},
     )["RAINNC"]
     ds_c = xr.open_dataset(
-        "/scratch/athippp/cylc-archive/WRF8kmSEAS_H200911/20091102T0000Z/mem1/outputs/wrf2d_RAINC.nc",
+        f"/scratch/athippp/cylc-archive/{exp_name}_H200911/20091102T0000Z/mem1/outputs/wrf2d_RAINC.nc",
         chunks={},
     )["RAINC"]
     ds = ds_nc + ds_c
@@ -190,14 +192,13 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
         central_latitude=27,
         standard_parallels=(18, 27),
     )
-    fig, axes1 = plt.subplots(
-        nrows=2,
-        ncols=2,
-        figsize=(5 * 3, 5 * 3),
-        subplot_kw={"projection": proj},
-    )
-
-    axes = axes1.ravel()
+    fig = plt.figure(figsize=(5 * 2, 5 * 3))
+    axes = []
+    gs = gridspec.GridSpec(3, 2, height_ratios=[1, 1, 1])
+    for i in range(3):
+        for j in range(2):
+            axes.append(fig.add_subplot(gs[i, j], projection=proj))
+    # axes.append(fig.add_subplot(gs[2, :], projection=proj))
 
     for n, (mon, seaname) in enumerate(seas.items()):
         month = mon
@@ -212,6 +213,25 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
             yearrange=yearrange,
         )
         wrfapseas = ymonmean_precip_wrfapseas(
+            "WRF8kmSEAS",
+            month,
+            lead,
+            ensstat=enstat,
+            nmons=nmons,
+            field=field,
+            yearrange=yearrange,
+        )
+        cpldapseas_no_nudge = ymonmean_precip_wrfapseas(
+            "nSNCPLD8kmSEAS",
+            month,
+            lead,
+            ensstat=enstat,
+            nmons=nmons,
+            field=field,
+            yearrange=yearrange,
+        )
+        wrfapseas_no_nudge = ymonmean_precip_wrfapseas(
+            "nSNWRF8kmSEAS",
             month,
             lead,
             ensstat=enstat,
@@ -233,6 +253,8 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
         data_dict = {
             "CPLDSEAS": apseas,
             "WRFSEAS": wrfapseas,
+            "CPLDSEASnoNudge": cpldapseas_no_nudge,
+            "WRFSEASnoNudge": wrfapseas_no_nudge,
             "SEAS5": seas5,
             "ERA5": era5,
             #    "TRMM": trmm,
@@ -275,68 +297,6 @@ def make_seas_plots(fname, lead, enstat, field="precip", yearrange=range(2009, 2
         label=f"Rainfall (mm) - {title_year} ",
     )
     plt.savefig(f"{fname}_seas_lead{lead}_ens{enstat}_{field}_{title_year}.png")
-    plt.gca()
-    plt.gcf()
-    plt.close()
-
-
-def plot_c2nc_ratio_apseas(fname, lead, enstat):
-    nmons = 3
-    seas = {12: "DJF", 3: "MAM", 6: "JJA", 9: "SON"}
-    proj = ccrs.LambertConformal(
-        central_longitude=45,
-        central_latitude=27,
-        standard_parallels=(18, 27),
-    )
-    fig, axes1 = plt.subplots(
-        nrows=2,
-        ncols=2,
-        figsize=(15, 15),
-        subplot_kw={"projection": proj},
-    )
-    axes = axes1.ravel()
-    levels = [0, 3, 6, 9, 12, 16, 20, 25, 30, 40, 50, 75, 100, 120]
-
-    cmap, norm = get_cmap(levels, cc.cm["rainbow4"])
-    for n, (mon, seaname) in enumerate(seas.items()):
-        month = mon
-        if month < 1:
-            month += 12
-        precip, _ = ymonmean_precip_apseas(
-            month, lead, ensstat=enstat, nmons=nmons, field="precip"
-        )
-        precipc, _ = ymonmean_precip_apseas(
-            month, lead, ensstat=enstat, nmons=nmons, field="precipc"
-        )
-
-        data = (precipc / precip) * 100.0
-
-        ax = axes[n]
-        lon, lat = get_lon_lat(data)
-        values = data.values
-        cs = ax.pcolormesh(
-            lon,
-            lat,
-            values,
-            transform=ccrs.PlateCarree(),
-            cmap=cmap,
-            norm=norm,
-        )
-
-        ax.coastlines()
-        ax.add_feature(cfeature.BORDERS)
-        ax.set_title(seaname, loc="right", fontsize=18)
-
-    fig.suptitle(
-        f"Convective Rainfall / Total Rainfall (Forecast Lead {lead})"
-    )  # Add a single colorbar for all subplots
-    cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])
-    plt.colorbar(
-        cs,
-        cax=cbar_ax,
-        label="Rainfall (mm)",
-    )
-    plt.savefig(f"{fname}_seas_lead{lead}_ens{enstat}.png")
     plt.gca()
     plt.gcf()
     plt.close()
